@@ -7,6 +7,8 @@ class CreditTransaction(models.Model):
         ('SESSION_PAYMENT', 'Session Payment'),
         ('BOUNTY_REWARD', 'Bounty Reward'),
         ('PENALTY', 'Penalty'),
+        ('TAX', 'Tax'),
+        ('DONATION', 'Donation'),
     ]
 
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
