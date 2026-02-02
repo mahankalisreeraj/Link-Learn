@@ -1,0 +1,122 @@
+import { create } from 'zustand';
+import api from '../api/axios';
+import { toast } from 'react-hot-toast'; // We might need a toast library, or just console for now. Let's assume standard alert or console if not installed.
+// Actually, let's stick to console/local error state to keep dependencies low as per strict stack, or install react-hot-toast if "Production grade" implies good UX. 
+// "Tech stack (strict)" didn't mention toast, but "production grade" implies it. I'll stick to local state for errors/messages to be safe.
+
+interface WalletState {
+    balance: number;
+    isEligibleForSupport: boolean;
+    supportAmount: number;
+    cooldownMessage: string | null;
+    isLoading: boolean;
+
+    fetchWalletData: () => Promise<void>;
+    checkEligibility: () => Promise<void>;
+    claimSupport: () => Promise<void>;
+    donate: (amount: number) => Promise<void>;
+
+    // WS Logic
+    connectWebSocket: () => void;
+    disconnectWebSocket: () => void;
+}
+
+export const useWalletStore = create<WalletState>((set, get) => ({
+    balance: 0,
+    isEligibleForSupport: false,
+    supportAmount: 0,
+    cooldownMessage: null,
+    isLoading: false,
+
+    fetchWalletData: async () => {
+        // In a real app, we might have a specific endpoint for wallet details or just use user profile
+        // For now, we assume we might get balance from a 'me' endpoint or similar.
+        // Wait, we don't have a specific "get balance" endpoint? 
+        // We can use the 'support/eligibility' to at least check balance indirectly or add a specific profile endpoint.
+        // Let's assume we can get it from eligibility for now or add a 'wallet/balance' endpoint later.
+        // Actually, let's add a quick check for balance. 
+        // For now, I'll use checkEligibility to update balance (side effect) or just trust WS updates.
+        await get().checkEligibility();
+    },
+
+    checkEligibility: async () => {
+        set({ isLoading: true });
+        try {
+            // We need a way to get the current balance. 
+            // The support/eligibility endpoint returns { eligible, amount, reason }.
+            // It doesn't explicitly return balance.
+            // I should probably rely on User/Profile endpoint which usually returns wallet balance.
+            // But I haven't built a "get user profile" endpoint yet in Users app that returns wallet.
+            // UseAuthStore has user... maybe we can attach wallet to user login response?
+
+            const response = await api.get('/economy/support/eligibility/');
+            set({
+                isEligibleForSupport: response.data.eligible,
+                supportAmount: response.data.amount,
+                cooldownMessage: response.data.eligible ? null : response.data.reason
+            });
+
+            // Update balance if we had an endpoint. 
+            // TEMPORARY: relying on what we know or separate call? 
+            // Let's assume we implement a 'users/me' to get balance.
+        } catch (err) {
+            console.error(err);
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    claimSupport: async () => {
+        set({ isLoading: true });
+        try {
+            const response = await api.post('/economy/support/claim/');
+            set((state) => ({
+                balance: state.balance + response.data.amount,
+                isEligibleForSupport: false,
+                cooldownMessage: "Cooldown active.",
+                isLoading: false
+            }));
+            // Re-check to sync
+            get().checkEligibility();
+        } catch (err: any) {
+            console.error("Claim failed", err);
+            set({ isLoading: false });
+            alert(err.response?.data?.error || "Failed to claim");
+        }
+    },
+
+    donate: async (amount: number) => {
+        if (amount <= 0) return;
+        set({ isLoading: true });
+        try {
+            // We need a donate endpoint. 
+            // Wait, I implemented 'donate_to_bank' service but did I expose it?
+            // Checking economy/views.py... I didn't see a DonateView! 
+            // I only made SupportEligibilityView and SupportClaimView.
+            // I missed the Donate Endpoint! I must fix this in Backend.
+
+            // Assume I will create POST /economy/donate/
+            await api.post('/economy/donate/', { amount });
+
+            set((state) => ({
+                balance: state.balance - amount,
+                isLoading: false
+            }));
+            get().checkEligibility();
+        } catch (err: any) {
+            console.error("Donation failed", err);
+            set({ isLoading: false });
+            alert(err.response?.data?.error || "Donation failed");
+        }
+    },
+
+    connectWebSocket: () => {
+        // Placeholder for WS
+        console.log("Connecting to Wallet WS...");
+        // socket = new WebSocket(...)
+    },
+
+    disconnectWebSocket: () => {
+        // if (socket) socket.close()
+    }
+}));

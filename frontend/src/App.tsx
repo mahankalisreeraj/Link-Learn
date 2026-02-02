@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Layout from './components/Layout';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 
@@ -14,19 +15,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
   return children;
 };
-
-// Placeholder Home
-const Dashboard = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Link & Learn</h1>
-      <p className="text-gray-600 mb-8">Peer-to-peer learning platform</p>
-      <div className="p-4 bg-white rounded shadow">
-        <p className="text-green-600 font-medium">You are logged in!</p>
-      </div>
-    </div>
-  </div>
-);
 
 function App() {
   const { checkAuth } = useAuthStore();
@@ -45,7 +33,13 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Layout title="Dashboard">
+                {/* Dashboard Content - Placeholder or existing text */}
+                <div className="text-center py-20">
+                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Welcome to your Dashboard</h2>
+                  <p className="text-slate-500">Your learning journey begins here.</p>
+                </div>
+              </Layout>
             </ProtectedRoute>
           }
         />
