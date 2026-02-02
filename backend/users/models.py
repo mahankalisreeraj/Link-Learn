@@ -32,6 +32,7 @@ class User(AbstractUser):
 class Wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wallet')
     balance = models.IntegerField(default=0)
+    last_support_claim = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.email}'s Wallet: {self.balance}"

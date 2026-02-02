@@ -114,3 +114,69 @@ def donate_to_bank(user_wallet, amount):
             description=f'Donation from {user_wallet.user.email}'
     )
     return amount
+
+from django.utils import timezone
+from datetime import timedelta
+
+def check_support_eligibility(user):
+    wallet = user.wallet
+    
+    # 1. Cooldown Check (7 days)
+    if wallet.last_support_claim:
+        days_since = (timezone.now() - wallet.last_support_claim).days
+        if days_since < 7:
+            return False, 0, f"Cooldown active. Try again in {7 - days_since} days."
+
+    # 2. Balance Check & Amount Calculation
+    balance = wallet.balance
+    amount = 0
+    
+    if balance == 0:
+        amount = 6
+    elif 1 <= balance <= 2:
+        amount = 4
+    elif balance == 3:
+        amount = 2
+    else:
+        return False, 0, "Not eligible. Balance > 3."
+        
+    return True, amount, "Eligible"
+
+@transaction.atomic
+def claim_support_credits(user):
+    eligible, amount, reason = check_support_eligibility(user)
+    if not eligible:
+        raise ValidationError(reason)
+        
+    wallet = user.wallet
+    wallet.balance += amount
+    wallet.last_support_claim = timezone.now()
+    wallet.save()
+    
+    # Credits come from System/Bank? Requirement doesn't specify source, usually "minted" or from Bank. 
+    # "System Bank" logic from before implies we might want to track it.
+    # Let's deduct from Bank to keep inflation tracked? Or just mint.
+    # If we adhere to "Bank has no fixed balance" but "Bank takes cut", maybe Bank is the source.
+    # Let's log it against the Bank wallet for accounting if we want, or just as a grant.
+    # To be consistent with "Donations go to Bank", grants could come from Bank.
+    # Let's simply debit Bank (it can go negative as it's computed).
+    
+    bank_wallet = get_bank_wallet()
+    bank_wallet.balance -= amount
+    bank_wallet.save() # Optional update
+    
+    CreditTransaction.objects.create(
+        wallet=wallet,
+        amount=amount,
+        transaction_type='SUPPORT_GRANT',
+        description='Weekly Support Credit'
+    )
+    
+    CreditTransaction.objects.create(
+        wallet=bank_wallet,
+        amount=-amount,
+        transaction_type='SUPPORT_GRANT',
+        description=f'Grant to {user.email}'
+    )
+    
+    return amount

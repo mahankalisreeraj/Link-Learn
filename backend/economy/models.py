@@ -9,6 +9,7 @@ class CreditTransaction(models.Model):
         ('PENALTY', 'Penalty'),
         ('TAX', 'Tax'),
         ('DONATION', 'Donation'),
+        ('SUPPORT_GRANT', 'Support Grant'),
     ]
 
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
