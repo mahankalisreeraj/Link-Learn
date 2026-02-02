@@ -16,5 +16,22 @@ class LearningRequestPost(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    timestamp = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return f"{self.creator.email} wants to learn {self.topic_to_learn}"
+
+class SystemConfig(models.Model):
+    bounty_mode_active = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(SystemConfig, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return f"System Config (Bounty Mode: {self.bounty_mode_active})"
