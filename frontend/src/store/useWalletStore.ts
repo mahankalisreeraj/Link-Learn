@@ -1,8 +1,5 @@
 import { create } from 'zustand';
 import api from '../api/axios';
-import { toast } from 'react-hot-toast'; // We might need a toast library, or just console for now. Let's assume standard alert or console if not installed.
-// Actually, let's stick to console/local error state to keep dependencies low as per strict stack, or install react-hot-toast if "Production grade" implies good UX. 
-// "Tech stack (strict)" didn't mention toast, but "production grade" implies it. I'll stick to local state for errors/messages to be safe.
 
 interface WalletState {
     balance: number;

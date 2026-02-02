@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.13.4",
     "clsx": "^2.1.1",
+    "fabric": "^7.1.0",
     "lucide-react": "^0.563.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -20,6 +21,8 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@types/fabric": "^5.3.11",
+    "@types/node": "^25.2.0",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

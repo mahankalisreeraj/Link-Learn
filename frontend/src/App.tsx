@@ -6,6 +6,7 @@ import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 
 import LandingPage from './pages/LandingPage';
+import SessionRoom from './pages/SessionRoom';
 
 // Simplified Protected Route
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -40,6 +41,14 @@ function App() {
                   <p className="text-slate-500">Your learning journey begins here.</p>
                 </div>
               </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/session/:id"
+          element={
+            <ProtectedRoute>
+              <SessionRoom />
             </ProtectedRoute>
           }
         />
