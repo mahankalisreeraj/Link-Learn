@@ -36,3 +36,13 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"{self.user.email}'s Wallet: {self.balance}"
+
+class Rating(models.Model):
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_given')
+    reviewee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_received')
+    score = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.reviewer} -> {self.reviewee}: {self.score}"
