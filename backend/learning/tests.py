@@ -10,28 +10,49 @@ User = get_user_model()
 @pytest.mark.django_db
 class TestLearningRequests:
     def test_create_post_authenticated(self):
-        user = User.objects.create_user(email='test@example.com', password='password')
+        user = User.objects.create_user(email='test@example.com', password='password', name='Tester')
         client = APIClient()
         client.force_authenticate(user=user)
         
         url = reverse('post-create')
         data = {
-            'want_to_learn': 'Django Connect',
-            'can_teach': 'Basic Math',
-            'is_just_learning': False
+            'topic_to_learn': 'Django Connect',
+            'topic_to_teach': 'Basic Math',
+            'learning_only_flag': False,
+            'bounty_mode': True
         }
         
         response = client.post(url, data)
         assert response.status_code == status.HTTP_201_CREATED
         assert LearningRequestPost.objects.count() == 1
         post = LearningRequestPost.objects.first()
-        assert post.user == user
-        assert post.want_to_learn == 'Django Connect'
-        assert post.status == 'active'
+        assert post.creator == user
+        assert post.topic_to_learn == 'Django Connect'
+        assert post.status == 'Active'
+        assert post.bounty_mode is True
 
-    def test_create_post_unauthenticated(self):
+    def test_list_public_posts(self):
+        user = User.objects.create_user(email='u1@example.com', password='pw')
+        LearningRequestPost.objects.create(creator=user, topic_to_learn='A', status='Active')
+        LearningRequestPost.objects.create(creator=user, topic_to_learn='B', status='Cancelled') # Should not show
+        
         client = APIClient()
-        url = reverse('post-create')
-        data = {'want_to_learn': 'Something'}
-        response = client.post(url, data)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        url = reverse('post-list-public')
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]['topic_to_learn'] == 'A'
+
+    def test_list_my_posts(self):
+        user1 = User.objects.create_user(email='u1@example.com', password='pw')
+        user2 = User.objects.create_user(email='u2@example.com', password='pw')
+        LearningRequestPost.objects.create(creator=user1, topic_to_learn='My Post', status='Active')
+        LearningRequestPost.objects.create(creator=user2, topic_to_learn='Other Post', status='Active')
+        
+        client = APIClient()
+        client.force_authenticate(user=user1)
+        url = reverse('post-list-me')
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]['topic_to_learn'] == 'My Post'

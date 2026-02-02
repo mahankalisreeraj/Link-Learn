@@ -8,4 +8,16 @@ class PostCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(creator=self.request.user)
+
+class PublicPostListView(generics.ListAPIView):
+    queryset = LearningRequestPost.objects.filter(status='Active').order_by('-timestamp')
+    serializer_class = LearningRequestPostSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UserPostListView(generics.ListAPIView):
+    serializer_class = LearningRequestPostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return LearningRequestPost.objects.filter(creator=self.request.user).order_by('-timestamp')
