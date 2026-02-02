@@ -34,7 +34,7 @@ class TestLearningRequests:
     def test_list_public_posts(self):
         user = User.objects.create_user(email='u1@example.com', password='pw')
         LearningRequestPost.objects.create(creator=user, topic_to_learn='A', status='Active')
-        LearningRequestPost.objects.create(creator=user, topic_to_learn='B', status='Cancelled') # Should not show
+        LearningRequestPost.objects.create(creator=user, topic_to_learn='B', status='Completed') # Should not show
         
         client = APIClient()
         url = reverse('post-list-public')
@@ -43,11 +43,10 @@ class TestLearningRequests:
         assert len(response.data) == 1
         assert response.data[0]['topic_to_learn'] == 'A'
 
-    def test_list_my_posts(self):
+    def test_list_my_posts_hides_completed(self):
         user1 = User.objects.create_user(email='u1@example.com', password='pw')
-        user2 = User.objects.create_user(email='u2@example.com', password='pw')
-        LearningRequestPost.objects.create(creator=user1, topic_to_learn='My Post', status='Active')
-        LearningRequestPost.objects.create(creator=user2, topic_to_learn='Other Post', status='Active')
+        LearningRequestPost.objects.create(creator=user1, topic_to_learn='Active Post', status='Active')
+        LearningRequestPost.objects.create(creator=user1, topic_to_learn='Completed Post', status='Completed')
         
         client = APIClient()
         client.force_authenticate(user=user1)
@@ -55,4 +54,31 @@ class TestLearningRequests:
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
-        assert response.data[0]['topic_to_learn'] == 'My Post'
+        assert response.data[0]['topic_to_learn'] == 'Active Post'
+
+    def test_complete_post(self):
+        user = User.objects.create_user(email='u1@example.com', password='pw')
+        post = LearningRequestPost.objects.create(creator=user, topic_to_learn='To Complete', status='Active')
+        
+        client = APIClient()
+        client.force_authenticate(user=user)
+        url = reverse('post-update-status', kwargs={'pk': post.pk})
+        data = {'status': 'Completed'}
+        
+        response = client.patch(url, data)
+        assert response.status_code == status.HTTP_200_OK
+        
+        post.refresh_from_db()
+        assert post.status == 'Completed'
+        
+    def test_cannot_update_completed_post(self):
+        user = User.objects.create_user(email='u1@example.com', password='pw')
+        post = LearningRequestPost.objects.create(creator=user, topic_to_learn='Already Done', status='Completed')
+        
+        client = APIClient()
+        client.force_authenticate(user=user)
+        url = reverse('post-update-status', kwargs={'pk': post.pk})
+        data = {'status': 'Active'} # Trying to reactivate or change
+        
+        response = client.patch(url, data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

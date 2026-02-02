@@ -1,6 +1,6 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, exceptions
 from .models import LearningRequestPost
-from .serializers import LearningRequestPostSerializer
+from .serializers import LearningRequestPostSerializer, PostStatusUpdateSerializer
 
 class PostCreateView(generics.CreateAPIView):
     queryset = LearningRequestPost.objects.all()
@@ -20,4 +20,19 @@ class UserPostListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return LearningRequestPost.objects.filter(creator=self.request.user).order_by('-timestamp')
+        # Requirement: Completed posts are never retrievable again
+        return LearningRequestPost.objects.filter(creator=self.request.user).exclude(status='Completed').order_by('-timestamp')
+
+class PostUpdateView(generics.UpdateAPIView):
+    queryset = LearningRequestPost.objects.all()
+    serializer_class = PostStatusUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return LearningRequestPost.objects.filter(creator=self.request.user)
+    
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        if instance.status != 'Active':
+             raise exceptions.ValidationError("Only Active posts can be updated.")
+        serializer.save()
