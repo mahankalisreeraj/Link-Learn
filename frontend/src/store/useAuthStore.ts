@@ -1,10 +1,14 @@
 import { create } from 'zustand';
 import api from '../api/axios';
 
-interface User {
+export interface User {
     id: number;
     email: string;
     name: string;
+    wallet?: {
+        balance: number;
+        last_support_claim: string | null;
+    };
 }
 
 interface AuthState {
@@ -15,10 +19,11 @@ interface AuthState {
     login: (email: string, password: string) => Promise<void>;
     signup: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
-    checkAuth: () => void;
+    checkAuth: () => Promise<void>;
+    fetchProfile: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     isAuthenticated: !!localStorage.getItem('access_token'),
     isLoading: false,
@@ -33,9 +38,9 @@ export const useAuthStore = create<AuthState>((set) => ({
             localStorage.setItem('access_token', access);
             localStorage.setItem('refresh_token', refresh);
 
-            set({ isAuthenticated: true, isLoading: false });
-
-            // Ideally fetch user profile here if needed, but for now we just set auth
+            set({ isAuthenticated: true });
+            await get().fetchProfile();
+            set({ isLoading: false });
         } catch (error: any) {
             set({
                 error: error.response?.data?.detail || 'Login failed',
@@ -49,8 +54,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ isLoading: true, error: null });
         try {
             await api.post('/users/signup/', { name, email, password });
-            // Auto login after signup not implemented in backend yet or simply require relogin
-            // For UX, let's just finish and let component redirect
             set({ isLoading: false });
         } catch (error: any) {
             set({
@@ -67,8 +70,26 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ user: null, isAuthenticated: false });
     },
 
-    checkAuth: () => {
-        // Simple check for existence of token
-        set({ isAuthenticated: !!localStorage.getItem('access_token') });
+    checkAuth: async () => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            set({ isAuthenticated: true });
+            try {
+                await get().fetchProfile();
+            } catch (err) {
+                localStorage.removeItem('access_token');
+                set({ isAuthenticated: false, user: null });
+            }
+        }
+    },
+
+    fetchProfile: async () => {
+        try {
+            const response = await api.get('/users/me/');
+            set({ user: response.data });
+        } catch (err) {
+            console.error("Fetch profile failed", err);
+            throw err;
+        }
     }
 }));

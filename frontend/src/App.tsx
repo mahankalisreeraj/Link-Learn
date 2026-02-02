@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Layout from './components/Layout';
 import { useAuthStore } from './store/useAuthStore';
 import { useEffect } from 'react';
 
@@ -9,6 +8,7 @@ import LandingPage from './pages/LandingPage';
 import SessionRoom from './pages/SessionRoom';
 import Profile from './pages/Profile';
 import Discovery from './pages/Discovery';
+import Dashboard from './pages/Dashboard';
 
 // Simplified Protected Route
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -36,13 +36,7 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Layout title="Dashboard">
-                {/* Dashboard Content - Placeholder or existing text */}
-                <div className="text-center py-20">
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Welcome to your Dashboard</h2>
-                  <p className="text-slate-500">Your learning journey begins here.</p>
-                </div>
-              </Layout>
+              <Dashboard />
             </ProtectedRoute>
           }
         />

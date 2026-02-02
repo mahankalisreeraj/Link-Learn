@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '../api/axios';
+import { useAuthStore } from './useAuthStore';
 
 interface WalletState {
     balance: number;
@@ -26,13 +27,11 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     isLoading: false,
 
     fetchWalletData: async () => {
-        // In a real app, we might have a specific endpoint for wallet details or just use user profile
-        // For now, we assume we might get balance from a 'me' endpoint or similar.
-        // Wait, we don't have a specific "get balance" endpoint? 
-        // We can use the 'support/eligibility' to at least check balance indirectly or add a specific profile endpoint.
-        // Let's assume we can get it from eligibility for now or add a 'wallet/balance' endpoint later.
-        // Actually, let's add a quick check for balance. 
-        // For now, I'll use checkEligibility to update balance (side effect) or just trust WS updates.
+        // We can get balance from auth store's user object if it's there
+        const { user } = useAuthStore.getState();
+        if (user?.wallet) {
+            set({ balance: user.wallet.balance });
+        }
         await get().checkEligibility();
     },
 

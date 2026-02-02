@@ -5,4 +5,4 @@ from .models import User, Wallet
 @receiver(post_save, sender=User)
 def create_user_wallet(sender, instance, created, **kwargs):
     if created:
-        Wallet.objects.create(user=instance, balance=15)
+        Wallet.objects.create(user=instance, balance=50)
