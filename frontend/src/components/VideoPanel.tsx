@@ -1,6 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useSessionStore } from '../store/useSessionStore';
 
+declare global {
+    interface Window {
+        JitsiMeetExternalAPI: any;
+    }
+}
+
+
 const VideoPanel: React.FC = () => {
     const { isVideoEnabled, sessionId } = useSessionStore();
     const jitsiContainerRef = useRef<HTMLDivElement>(null);

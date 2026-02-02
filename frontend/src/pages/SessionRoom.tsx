@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/useSessionStore';
 import Whiteboard from '../components/Whiteboard';
 import VideoPanel from '../components/VideoPanel';
-import { Mic, Video, VideoOff, PhoneOff, MessageSquare } from 'lucide-react';
+import { Video, VideoOff, PhoneOff, MessageSquare } from 'lucide-react';
+
 
 const SessionRoom: React.FC = () => {
     const { id } = useParams<{ id: string }>();

@@ -21,6 +21,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "@types/fabric": "^5.3.11",
     "@types/node": "^25.2.0",
     "@types/react": "^18.2.55",

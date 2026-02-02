@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 
 import LandingPage from './pages/LandingPage';
 import SessionRoom from './pages/SessionRoom';
+import Profile from './pages/Profile';
+import Discovery from './pages/Discovery';
 
 // Simplified Protected Route
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -50,6 +52,20 @@ function App() {
             <ProtectedRoute>
               <SessionRoom />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/:id?"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/discovery"
+          element={
+            <Discovery />
           }
         />
       </Routes>

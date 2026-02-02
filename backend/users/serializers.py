@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Wallet, Rating
-from learning.models import LearningRequestPost
-from learning.serializers import LearningRequestPostSerializer
 
 User = get_user_model()
 
@@ -48,9 +46,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_posts(self, obj):
         # "All learning request posts"
-        # We can reuse LearningRequestPostSerializer
+        # Inline serialization to avoid circular import
+        from learning.models import LearningRequestPost
         posts = LearningRequestPost.objects.filter(creator=obj).order_by('-timestamp')
-        return LearningRequestPostSerializer(posts, many=True).data
+        return [{
+            'id': p.id,
+            'topic_to_learn': p.topic_to_learn,
+            'topic_to_teach': p.topic_to_teach,
+            'learning_only_flag': p.learning_only_flag,
+            'status': p.status,
+            'timestamp': p.timestamp
+        } for p in posts]
 
     def to_representation(self, instance):
         # Custom logic to hide wallet if not self

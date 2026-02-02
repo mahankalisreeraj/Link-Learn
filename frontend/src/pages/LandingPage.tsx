@@ -11,22 +11,36 @@ const LandingPage: React.FC = () => {
         e.preventDefault();
         if (!learnQuery.trim()) return;
 
-        // For now, just navigate to login/signup or dashboard with query params
-        // In a real app, this might search public posts or prompt to signup to see results
-        console.log({ learnQuery, teachQuery, justLearning });
-        navigate('/signup'); // Funnel to signup for now
+        console.log("Searching for:", { learnQuery, teachQuery, justLearning });
+        navigate(`/discovery?q=${encodeURIComponent(learnQuery)}`);
     };
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
             {/* Navbar Placeholder */}
-            <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+            <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-50">
                 <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                     Link & Learn
                 </div>
                 <div className="space-x-4">
-                    <button onClick={() => navigate('/login')} className="text-slate-600 font-medium hover:text-blue-600 transition">Log In</button>
-                    <button onClick={() => navigate('/signup')} className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition shadow-lg shadow-blue-600/20">Sign Up</button>
+                    <button
+                        onClick={() => {
+                            console.log("Navigating to login");
+                            navigate('/login');
+                        }}
+                        className="text-slate-600 font-medium hover:text-blue-600 transition p-2"
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => {
+                            console.log("Navigating to signup");
+                            navigate('/signup');
+                        }}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition shadow-lg shadow-blue-600/20"
+                    >
+                        Sign Up
+                    </button>
                 </div>
             </nav>
 

@@ -20,8 +20,8 @@ const Login: React.FC = () => {
 
         try {
             await login(email, password);
-            // Login successful, redirect to dashboard (or home for now)
-            navigate('/');
+            // Redirect to dashboard on success
+            navigate('/dashboard');
         } catch (err) {
             // Error handled by store
         }

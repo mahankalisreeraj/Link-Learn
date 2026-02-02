@@ -1,25 +1,29 @@
 import React, { useEffect, useRef } from 'react';
-import { fabric } from 'fabric';
+import { Canvas } from 'fabric';
+
 
 const Whiteboard: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
+    const fabricCanvasRef = useRef<Canvas | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current || !containerRef.current) return;
 
         // Initialize Canvas
-        const canvas = new fabric.Canvas(canvasRef.current, {
+        const canvas = new Canvas(canvasRef.current, {
             isDrawingMode: true,
             height: containerRef.current.offsetHeight,
             width: containerRef.current.offsetWidth,
             backgroundColor: '#ffffff'
         });
 
+
         // Default Brush
-        canvas.freeDrawingBrush.width = 5;
-        canvas.freeDrawingBrush.color = '#000000';
+        if (canvas.freeDrawingBrush) {
+            canvas.freeDrawingBrush.width = 5;
+            canvas.freeDrawingBrush.color = '#000000';
+        }
 
         fabricCanvasRef.current = canvas;
 
@@ -47,9 +51,9 @@ const Whiteboard: React.FC = () => {
 
             {/* Simple Tools Overlay (Placeholder) */}
             <div className="absolute top-4 left-4 bg-white p-2 rounded-lg shadow-md flex gap-2 border border-slate-200">
-                <div className="w-4 h-4 bg-black rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current) fabricCanvasRef.current.freeDrawingBrush.color = '#000000'; }}></div>
-                <div className="w-4 h-4 bg-red-500 rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current) fabricCanvasRef.current.freeDrawingBrush.color = '#ef4444'; }}></div>
-                <div className="w-4 h-4 bg-blue-500 rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current) fabricCanvasRef.current.freeDrawingBrush.color = '#3b82f6'; }}></div>
+                <div className="w-4 h-4 bg-black rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current?.freeDrawingBrush) fabricCanvasRef.current.freeDrawingBrush.color = '#000000'; }}></div>
+                <div className="w-4 h-4 bg-red-500 rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current?.freeDrawingBrush) fabricCanvasRef.current.freeDrawingBrush.color = '#ef4444'; }}></div>
+                <div className="w-4 h-4 bg-blue-500 rounded-full cursor-pointer hover:scale-110" onClick={() => { if (fabricCanvasRef.current?.freeDrawingBrush) fabricCanvasRef.current.freeDrawingBrush.color = '#3b82f6'; }}></div>
             </div>
         </div>
     );
